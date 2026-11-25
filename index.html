@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaFund - Movie Crowdfunding Platform</title>
+    <style>
+        /* ==========================================
+           GLOBAL STYLES AND RESET
+           ========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ==========================================
+           HEADER AND NAVIGATION
+           ========================================== */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #2a5298;
+        }
+
+        /* ==========================================
+           MAIN CONTENT AREAS
+           ========================================== */
+        .main-content {
+            margin-top: 80px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section {
+            display: none;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==========================================
+           HERO SECTION
+           ========================================== */
+        .hero {
+            background: linear-gradient(rgba(42, 82, 152, 0.8), rgba(42, 82, 152, 0.8)),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23f0f0f0" width="1200" height="600"/><text x="600" y="300" text-anchor="middle" font-size="40" fill="%23ccc">Film Production</text></svg>');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            background: #ff6b35;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ==========================================
+           PHASE MODEL VISUALIZATION
+           ========================================== */
+        .phase-model {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .phase-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .phase-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .phase-number {
+            background: rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        /* ==========================================
+           CROWD TIER SYSTEM
+           ========================================== */
+        .crowd-tiers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .tier-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tier-card.a-star {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        }
+
+        .tier-card.b-star {
+            border-color: #c0c0c0;
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+        }
+
+        .tier-card.c-star {
+            border-color: #cd7f32;
+            background: linear-gradient(135deg, #cd7f32 0%, #daa520 100%);
+        }
+
+        .tier-card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        /* ==========================================
+           FORMS AND INPUTS
+           ========================================== */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        /* ==========================================
+           PROJECT CARDS
+           ========================================== */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .project-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .project-image {
+            height: 200px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .project-info {
+            padding: 1.5rem;
+        }
+
+        .project-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #2a5298;
+        }
+
+        .project-genre {
+            background: #f0f0f0;
+            color: #666;
+            padding: 0.2rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        /* ==========================================
+           PROGRESS BARS
+           ========================================== */
+        .progress-container {
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 3px;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 20px;
+            border-radius: 7px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* ==========================================
+           BUTTONS
+           ========================================== */
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #2a5298;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3c72;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        /* ==========================================
+           MODAL DIALOGS
+           ========================================== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        /* ==========================================
+           DASHBOARD STYLES
+           ========================================== */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* ==========================================
+           RESPONSIVE DESIGN
+           ========================================== */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .phase-model,
+            .crowd-tiers,
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==========================================
+           UTILITY CLASSES
+           ========================================== */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .mb-1 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 2rem;
+        }
+
+        .mt-1 {
+            margin-top: 1rem;
+        }
+
+        .mt-2 {
+            margin-top: 2rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .align-center {
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ==========================================
+         HEADER AND NAVIGATION
+         ========================================== -->
+    <header>
+        <nav>
+            <div class="logo">🎬 CinemaFund</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('home')">Home</a></li>
+                <li><a href="#" onclick="showSection('projects')">Projects</a></li>
+                <li><a href="#" onclick="showSection('submit')">Submit Project</a></li>
+                <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+                <li><a href="#" onclick="showSection('about')">About</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="main-content">
+            <!-- ==========================================
+                 HOME SECTION
+                 ========================================== -->
+            <section id="home" class="section active">
+                <div class="hero">
+                    <h1>Revolutionary Movie Crowdfunding</h1>
+                    <p>Experience the future of film financing through our innovative 9-phase crowdfunding model.
+                        Connect filmmakers with passionate supporters in a democratic, transparent ecosystem.</p>
+                    <button class="cta-button" onclick="showSection('projects')">Explore Projects</button>
+                </div>
+
+                <div style="padding: 2rem;">
+                    <h2 class="text-center mb-2">The 9-Phase Crowdfunding Model</h2>
+                    <p class="text-center mb-2">Our platform implements the research-backed 9-phase model for movie and
+                        web series crowdfunding, ensuring success for all stakeholders.</p>
+
+                    <div class="phase-model">
+                        <div class="phase-card">
+                            <div class="phase-number">1</div>
+                            <h3>Script Posting</h3>
+                            <p>Filmmakers post script abstracts and detailed project information, categorized by genre
+                                for easy discovery.</p>
+                        </div>
+                        <div class="phase-card">
+                            <div class="phase-number">2</div>
+                            <h3>User Registration</h3>
+                            <p>Contributors register and are classified into A-star, B-star, and C-star tiers based on
+                                contribution levels.</p>
+                        </div>
+                        <div class="phase-card">
+                            <div class="phase-number">3</div>
+                            <h3>Funding Phase</h3>
+                            <p>All-or-nothing funding model where projects must reach their goal to proceed to
+                                production.</p>
+                        </div>
+                        <div class="phase-card">
+                            <div class="phase-number">4</div>
+                            <h3>Casting Phase</h3>
+                            <p>Democratic audition process where backers can participate in casting decisions and crew
+                                selection.</p>
+                        </div>
+                        <div class="phase-card">
+                            <div class="phase-number">5</div>
+                            <h3>Decision Making</h3>
+                            <p>Collaborative decision-making between filmmakers and A-star contributors for key
+                                production choices.</p>
+                        </div>
+                        <div class="phase-card">
+                            <div class="phase-number">6</div>
+                            <h3>Fund Transfer</h3>
+                            <p>Secure transfer of funds to filmmakers after successful funding and decision-making
+                                completion.</p>
+                        </div>
+                        <div class="phase-card">
+                            <div class="phase-number">7</div>
+                            <h3>Distribution</h3>
+                            <p>Strategic distribution decisions including OTT platform selection and marketing
+                                strategies.</p>
+                        </div>
+                        <div class="phase-card">
+                            <div class="phase-number">8</div>
+                            <h3>Revenue Generation</h3>
+                            <p>Revenue sharing and profit distribution based on the chosen crowdfunding model.</p>
+                        </div>
+                        <div class="phase-card">
+                            <div class="phase-number">9</div>
+                            <h3>Promotion & Rewards</h3>
+                            <p>Reward distribution to backers and promotional activities for future project development.
+                            </p>
+                        </div>
+                    </div>
+                    <h2 class="text-center mb-2 mt-2">Crowd Tier System</h2>
+                    <div class="crowd-tiers">
+                        <div class="tier-card a-star">
+                            <h3>A-Star Crowd</h3>
+                            <p><strong>>3% of Budget</strong></p>
+                            <ul style="text-align: left; margin-top: 1rem;">
+                                <li>Essential decision-making power</li>
+                                <li>Cast and crew selection</li>
+                                <li>Financial tracking access</li>
+                                <li>Direct cast interaction</li>
+                                <li>Audition participation</li>
+                            </ul>
+                        </div>
+                        <div class="tier-card b-star">
+                            <h3>B-Star Crowd</h3>
+                            <p><strong>1-3% of Budget</strong></p>
+                            <ul style="text-align: left; margin-top: 1rem;">
+                                <li>Suggestion rights</li>
+                                <li>Limited audition access</li>
+                                <li>Progress tracking</li>
+                                <li>Credits inclusion</li>
+                                <li>Virtual cast interaction</li>
+                            </ul>
+                        </div>
+                        <div class="tier-card c-star">
+                            <h3>C-Star Crowd</h3>
+                            <p><strong>
+                                    <1% of Budget</strong>
+                            </p>
+                            <ul style="text-align: left; margin-top: 1rem;">
+                                <li>Regular project updates</li>
+                                <li>Signed merchandise</li>
+                                <li>Basic rewards</li>
+                                <li>Community access</li>
+                                <li>Early content access</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 PROJECTS SECTION
+                 ========================================== -->
+            <section id="projects" class="section">
+                <h2 class="mb-2">Current Projects</h2>
+                <div class="flex justify-between align-center mb-2">
+                    <div>
+                        <label for="genreFilter">Filter by Genre:</label>
+                        <select id="genreFilter">
+                            <option value="">All Genres</option>
+                            <option value="Drama">Drama</option>
+                            <option value="Comedy">Comedy</option>
+                            <option value="Sci-Fi">Sci-Fi</option>
+                            <option value="Horror">Horror</option>
+                            <option value="Documentary">Documentary</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="sortBy">Sort by:</label>
+                        <select id="sortBy">
+                            <option value="newest">Newest</option>
+                            <option value="ending">Ending Soon</option>
+                            <option value="popular">Most Popular</option>
+                            <option value="funded">Most Funded</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="project-grid" id="projectGrid">
+                    <!-- Sample projects will be displayed here -->
+                    <div class="project-card">
+                        <div class="project-image">🎬 The Digital Nomad</div>
+                        <div class="project-info">
+                            <div class="project-title">The Digital Nomad</div>
+                            <div class="project-genre">Drama</div>
+                            <p>A compelling story about modern work culture and digital transformation in the
+                                post-pandemic world.</p>
+                            <div class="progress-container">
+                                <div class="progress-bar" style="width: 64%">
+                                    <div class="progress-text">64.0%</div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between align-center">
+                                <div>
+                                    <strong>₹32,000</strong><br>
+                                    <small>of ₹50,000</small>
+                                </div>
+                                <div>
+                                    <strong>245</strong><br>
+                                    <small>backers</small>
+                                </div>
+                                <div>
+                                    <strong>25</strong><br>
+                                    <small>days left</small>
+                                </div>
+                            </div>
+                            <div class="mt-1">
+                                <small><strong>Phase:</strong> Funding</small>
+                            </div>
+                            <div class="mt-1">
+                                <button class="btn btn-primary" onclick="showProjectDetails()">View Details</button>
+                                <button class="btn btn-success" onclick="showContribution()">Contribute</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-image">🎬 Space Odyssey 2025</div>
+                        <div class="project-info">
+                            <div class="project-title">Space Odyssey 2025</div>
+                            <div class="project-genre">Sci-Fi</div>
+                            <p>A futuristic tale of human space exploration and the challenges of interplanetary
+                                colonization.</p>
+                            <div class="progress-container">
+                                <div class="progress-bar" style="width: 63%">
+                                    <div class="progress-text">63.3%</div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between align-center">
+                                <div>
+                                    <strong>₹95,000</strong><br>
+                                    <small>of ₹150,000</small>
+                                </div>
+                                <div>
+                                    <strong>478</strong><br>
+                                    <small>backers</small>
+                                </div>
+                                <div>
+                                    <strong>18</strong><br>
+                                    <small>days left</small>
+                                </div>
+                            </div>
+                            <div class="mt-1">
+                                <small><strong>Phase:</strong> Casting</small>
+                            </div>
+                            <div class="mt-1">
+                                <button class="btn btn-primary" onclick="showProjectDetails()">View Details</button>
+                                <button class="btn btn-success" onclick="showContribution()">Contribute</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 SUBMIT PROJECT SECTION
+                 ========================================== -->
+            <section id="submit" class="section">
+                <h2 class="mb-2">Submit Your Project</h2>
+                <p class="mb-2">Join our platform and bring your creative vision to life through crowdfunding. Follow
+                    our 9-phase model for maximum success.</p>
+
+                <form id="projectForm" onsubmit="submitProject(event)">
+                    <div class="form-group">
+                        <label for="projectTitle">Project Title *</label>
+                        <input type="text" id="projectTitle" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projectGenre">Genre *</label>
+                        <select id="projectGenre" required>
+                            <option value="">Select Genre</option>
+                            <option value="Drama">Drama</option>
+                            <option value="Comedy">Comedy</option>
+                            <option value="Sci-Fi">Science Fiction</option>
+                            <option value="Horror">Horror</option>
+                            <option value="Documentary">Documentary</option>
+                            <option value="Romance">Romance</option>
+                            <option value="Action">Action</option>
+                            <option value="Thriller">Thriller</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projectBudget">Funding Goal (₹) *</label>
+                        <input type="number" id="projectBudget" min="1000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projectDuration">Campaign Duration (days) *</label>
+                        <input type="number" id="projectDuration" min="30" max="120" value="60" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projectDescription">Project Description *</label>
+                        <textarea id="projectDescription" required
+                            placeholder="Describe your project, story, and vision..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="scriptAbstract">Script Abstract *</label>
+                        <textarea id="scriptAbstract" required
+                            placeholder="Provide a compelling summary of your script..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="filmmakerName">Filmmaker Name *</label>
+                        <input type="text" id="filmmakerName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="filmmakerExperience">Previous Experience</label>
+                        <textarea id="filmmakerExperience"
+                            placeholder="Describe your filmmaking background and previous projects..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rewardTiers">Reward Tiers</label>
+                        <textarea id="rewardTiers"
+                            placeholder="Describe rewards for different contribution levels..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Project</button>
+                </form>
+            </section>
+
+            <!-- ==========================================
+                 DASHBOARD SECTION
+                 ========================================== -->
+            <section id="dashboard" class="section">
+                <h2 class="mb-2">Your Dashboard</h2>
+
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">₹100</div>
+                        <div class="stat-label">Total Contributions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">1</div>
+                        <div class="stat-label">Projects Backed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">C-Star</div>
+                        <div class="stat-label">Current Tier</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Projects Created</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h3>Your Contributions</h3>
+                    <div class="contribution-item"
+                        style="border: 1px solid #e0e0e0; padding: 1rem; margin: 0.5rem 0; border-radius: 5px;">
+                        <strong>The Digital Nomad</strong><br>
+                        <small>Contributed: ₹100 (C-Star)</small><br>
+                        <small>Date: Recent</small>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h3>Your Projects</h3>
+                    <p>No projects submitted yet. <a href="#" onclick="showSection('submit')">Submit your first
+                            project</a>!</p>
+                </div>
+            </section>
+
+            <!-- ==========================================
+                 ABOUT SECTION
+                 ========================================== -->
+            <section id="about" class="section">
+                <h2 class="mb-2">About CinemaFund</h2>
+
+                <div style="max-width: 800px; margin: 0 auto;">
+                    <h3>Academic Implementation</h3>
+                    <p class="mb-1">This platform represents a comprehensive implementation of the 9-phase crowdfunding
+                        model for movies and web series. The research identified the need for a standardized approach to
+                        film crowdfunding that benefits all stakeholders in the ecosystem.</p>
+
+                    <h3>Research Foundation</h3>
+                    <p class="mb-1">The platform is built on extensive research analyzing successful and unsuccessful
+                        crowdfunding campaigns in the film industry. Key findings include the importance of reward-based
+                        models, democratic decision-making processes, and the three-tier contributor classification
+                        system.</p>
+
+                    <h3>Key Features</h3>
+                    <ul style="margin-bottom: 1rem;">
+                        <li><strong>9-Phase Model:</strong> Structured approach from script posting to reward
+                            distribution</li>
+                        <li><strong>Democratic Participation:</strong> Contributors influence project decisions based on
+                            investment level</li>
+                        <li><strong>Transparent Process:</strong> Clear communication and progress tracking</li>
+                        <li><strong>All-or-Nothing Funding:</strong> Projects must reach their goal to proceed</li>
+                        <li><strong>Reward-Based System:</strong> Maintains filmmaker independence while engaging
+                            backers</li>
+                    </ul>
+
+                    <h3>Technology Stack</h3>
+                    <p class="mb-1">This implementation uses modern web technologies including HTML5, CSS3, and
+                        JavaScript to create a responsive, user-friendly interface. The single-file architecture ensures
+                        easy deployment and demonstration while maintaining professional standards.</p>
+
+                    <h3>Educational Purpose</h3>
+                    <p class="mb-1">This platform serves as an educational tool demonstrating the practical application
+                        of academic research in crowdfunding and film finance. It showcases how theoretical models can
+                        be translated into functional digital platforms that serve real-world needs.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL DIALOGS
+         ========================================== -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">×</span>
+            <div id="modalContent">
+                <h2>Project Details</h2>
+                <p>Detailed project information will be displayed here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple variables without JSON structures
+        var currentSection = 'home';
+        var userContributions = 100;
+        var userTier = 'C-Star';
+        var projectsBacked = 1;
+        var projectsCreated = 0;
+
+        // Navigation functions
+        function showSection(sectionId) {
+            // Hide all sections
+            var sections = document.querySelectorAll('.section');
+            for (var i = 0; i < sections.length; i++) {
+                sections[i].classList.remove('active');
+            }
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            currentSection = sectionId;
+        }
+
+        // Project submission
+        function submitProject(event) {
+            event.preventDefault();
+            alert('Project submitted successfully! Your project is now in Phase 1: Script Posting.');
+            document.getElementById('projectForm').reset();
+            showSection('projects');
+        }
+
+        // Modal functions
+        function showProjectDetails() {
+            document.getElementById('projectModal').style.display = 'block';
+        }
+
+        function showContribution() {
+            alert('Contribution feature would be implemented here. This demo shows the interface structure.');
+        }
+
+        function closeModal() {
+            document.getElementById('projectModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            var modal = document.getElementById('projectModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Initialize platform
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('CinemaFund Platform Initialized - JSON-Free Version');
+        });
+    </script>
+</body>
+
+</html>
